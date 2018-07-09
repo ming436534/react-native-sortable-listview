@@ -415,8 +415,11 @@ class SortableListView extends React.Component {
     const Component = active ? SortRow : Row
     const isActiveRow =
       !active && this.state.active && this.state.active.rowData.index === index
-
     const hoveringIndex = this.order[this.state.hovering] || this.state.hovering
+    let hovering = hoveringIndex === index;
+    if (hoveringIndex == this.order.length && this.order.indexOf(index) === this.order.length - 1) {
+      hovering = true;
+    }
     return (
       <Component
         {...this.props}
@@ -427,7 +430,7 @@ class SortableListView extends React.Component {
         ref={view => {
           this._rowRefs[active ? 'ghost' : index] = view
         }}
-        hovering={hoveringIndex === index}
+        hovering={hovering}
         panResponder={this.state.panResponder}
         rowData={{ data, section, index }}
         onRowActive={this.handleRowActive}
