@@ -300,6 +300,7 @@ class SortableListView extends React.Component {
 
   handleContentSizeChange = (width, height) => {
     this.scrollContainerHeight = height
+    this.props.onContentSizeChange && this.props.onContentSizeChange(width, height)
   }
 
   scrollAnimation = () => {
