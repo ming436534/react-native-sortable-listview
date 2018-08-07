@@ -7,8 +7,8 @@ import {
   PanResponder,
   LayoutAnimation,
   InteractionManager,
-  FlatList,
 } from 'react-native'
+import ExtendedFlatList from './flatlist';
 
 const HEIGHT = Dimensions.get('window').height
 
@@ -355,7 +355,7 @@ class SortableListView extends React.Component {
     const SLOP = this.direction === 'down' ? itemHeight : 0
     const scrollValue = this.scrollValue
 
-    const moveY = this.moveY - this.wrapperLayout.pageY
+    const moveY = this.moveY - this.wrapperLayout.pageY - this.firstRowY
 
     const activeRowY = scrollValue + moveY
     let indexHeight = 0.0
@@ -367,7 +367,6 @@ class SortableListView extends React.Component {
     while (indexHeight < activeRowY + SLOP) {
       const key = order[i]
       row = this.layoutMap[key]
-      console.log(row);
       if (!row) {
         isLast = true
         break
@@ -376,7 +375,6 @@ class SortableListView extends React.Component {
       i++
     }
     if (!isLast) i--
-    console.log(i);
 
     if (String(i) !== this.state.hovering && i >= 0) {
       // LayoutAnimation is not supported in react-native-web
@@ -438,29 +436,19 @@ class SortableListView extends React.Component {
         panResponder={this.state.panResponder}
         rowData={{ data: this.props.data[item], index: item }}
         onRowActive={this.handleRowActive}
-        onRowLayout={this._updateLayoutMap(item)}
       />
     )
   }
 
-  _updateLayoutMap = index => e => {
-    // const layout = e.nativeEvent.layout
-    // const {onRowLayout} = this.props;
-    // if (this.firstRowY === undefined || layout.y < this.firstRowY) {
-    //   this.firstRowY = layout.y
-    // }
-    // this.layoutMap[index] = layout
-    // onRowLayout && onRowLayout(this.layoutMap);
-    // console.log(index);
-    // console.log(this.refs.list._listRef._getFrameMetrics(index));
-    if (index == null) {
-      return;
+  _updateLayoutMap = (e, cellKey, index) => {
+    const layout = e.nativeEvent.layout
+    const key = this.props.order[index];
+    const {onRowLayout} = this.props;
+    if (this.firstRowY === undefined || layout.y < this.firstRowY) {
+      this.firstRowY = layout.y
     }
-    const metrics = this.refs.list._listRef._getFrameMetrics(this.props.order.indexOf(index));
-    this.layoutMap[index] = {
-      y:  metrics.offset,
-      height: metrics.length,
-    }
+    this.layoutMap[key] = layout
+    onRowLayout && onRowLayout(this.layoutMap);
   }
 
   renderActive = () => {
@@ -504,7 +492,7 @@ class SortableListView extends React.Component {
     const scrollEnabled =
       !this.state.active && this.props.scrollEnabled !== false
 
-    const ListViewComponent = this.props.ListViewComponent || FlatList
+    const ListViewComponent = this.props.ListViewComponent || ExtendedFlatList
 
     return (
       <View ref="wrapper" style={{ flex: 1 }} collapsable={false}>
@@ -522,13 +510,16 @@ class SortableListView extends React.Component {
           onLayout={this.handleListLayout}
           scrollEnabled={scrollEnabled}
           renderItem={this.renderRow}
+          onCellLayout={(e, cellKey, index) => {
+            this._updateLayoutMap(e, cellKey, index)
+          }}
         />
         {this.renderActive()}
       </View>
     )
   }
 
-  scrollTo = (...args) => {
+  scrollToOffset = (...args) => {
     if (!this.refs.list) return
     this.refs.list.scrollToOffset(...args)
   }
