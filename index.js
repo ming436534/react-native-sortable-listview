@@ -92,12 +92,16 @@ class Row extends React.Component {
           this.props.active && this.props.hovering ? { opacity: 0.0 } : null,
 
         ]}
+        onLayout={() => {
+        }}
         ref="view"
       >
-        {this.props.hovering && shouldDisplayHovering
-          ? this.props.activeDivider
-          : null}
-        {Row}
+        <View>
+          {this.props.hovering && shouldDisplayHovering
+            ? this.props.activeDivider
+            : null}
+          {Row}
+        </View>
       </View>
     )
   }
@@ -401,13 +405,6 @@ class SortableListView extends React.Component {
     // LayoutAnimation is not supported in react-native-web
     LayoutAnimation && LayoutAnimation.easeInEaseOut()
 
-    if (Platform.OS === 'android') {
-      const layout = this.layoutMap[row.rowData.index];
-      row.layout = {
-        frameHeight: layout.height,
-        pageY: layout.y - this.firstRowY / 2,
-      }
-    }
     this.moveY = row.layout.pageY + row.layout.frameHeight / 2
     this.setState(
       {
