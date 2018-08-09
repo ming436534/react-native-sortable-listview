@@ -7,6 +7,7 @@ import {
   PanResponder,
   LayoutAnimation,
   InteractionManager,
+  Platform,
 } from 'react-native'
 import ExtendedFlatList from './flatlist';
 
@@ -84,12 +85,12 @@ class Row extends React.Component {
     )
     return (
       <View
-        onLayout={this.props.onRowLayout}
         style={[
           this.props.active && !this.props.hovering
             ? { height: 0.01, opacity: 0.0 }
             : null,
           this.props.active && this.props.hovering ? { opacity: 0.0 } : null,
+
         ]}
         ref="view"
       >
@@ -399,6 +400,14 @@ class SortableListView extends React.Component {
     this.state.pan.setValue({ x: 0, y: 0 })
     // LayoutAnimation is not supported in react-native-web
     LayoutAnimation && LayoutAnimation.easeInEaseOut()
+
+    if (Platform.OS === 'android') {
+      const layout = this.layoutMap[row.rowData.index];
+      row.layout = {
+        frameHeight: layout.height,
+        pageY: layout.y - this.firstRowY / 2,
+      }
+    }
     this.moveY = row.layout.pageY + row.layout.frameHeight / 2
     this.setState(
       {
@@ -502,11 +511,11 @@ class SortableListView extends React.Component {
     return (
       <View ref="wrapper" style={{ flex: 1 }} collapsable={false}>
         <AnimatedExtendedFlatList
-          style={{
-            flex: 1,
-          }}
           enableEmptySections
           {...this.props}
+          style={[{
+            flex: 1,
+          }, this.props.style]}
           {...this.state.panResponder.panHandlers}
           ref="list"
           data={this.props.order}
