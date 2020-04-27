@@ -16,7 +16,6 @@ class ExtendedFlatList extends FlatList {
     return (
       <ExtendedVirtualizedList
         {...this.props}
-        renderItem={this._renderItem}
         getItem={this._getItem}
         getItemCount={this._getItemCount}
         keyExtractor={this._keyExtractor}
